@@ -1,0 +1,16 @@
+.vscode/**
+.vscode-test/**
+webview-ui/src/**
+webview-ui/public/**
+webview-ui/node_modules/**
+webview-ui/package.json
+webview-ui/vite.config.js
+backend/.venv/**
+backend/__pycache__/**
+src/**
+.gitignore
+tsconfig.json
+webpack.config.js
+**/*.map
+**/*.ts
+*.vsix

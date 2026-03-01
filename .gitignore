@@ -1,0 +1,19 @@
+# Node
+node_modules/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.env
+
+# VS Code
+.vscode/
+*.vsix
+.DS_Store
+
+# Ziklo specific
+ziklo.db
