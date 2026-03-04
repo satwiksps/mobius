@@ -1,0 +1,60 @@
+{
+  "name": "ziklo",
+  "displayName": "Ziklo",
+  "description": "AI-powered desktop automation agent — build, run, and manage computer-use workflows natively inside VS Code.",
+  "version": "0.1.0",
+  "publisher": "ziklo",
+  "icon": "media/logo.svg",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ziklo.openDashboard",
+        "title": "Ziklo: Open Dashboard",
+        "icon": "$(play)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ziklo-sidebar",
+          "title": "Ziklo",
+          "icon": "media/activity-bar.svg"
+        }
+      ]
+    },
+    "views": {
+      "ziklo-sidebar": [
+        {
+          "type": "webview",
+          "id": "ziklo.sidebarView",
+          "name": "Ziklo"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.0",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.3.3"
+  }
+}
