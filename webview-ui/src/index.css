@@ -1,0 +1,62 @@
+:root {
+  background-color: var(--vscode-editor-background, #1e1e1e);
+  color: var(--vscode-editor-foreground, #cccccc);
+  font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+@keyframes ziklo-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--vscode-focusBorder, #007acc); }
+  50%       { box-shadow: 0 0 0 5px transparent; }
+}
+
+/* React Flow Overrides for VS Code */
+.react-flow__node {
+  border-radius: 4px;
+  background: var(--vscode-sideBar-background, #252526);
+  color: var(--vscode-foreground, #cccccc);
+  border: 1px solid var(--vscode-panel-border, #444444);
+  font-size: 12px;
+}
+
+.react-flow__node.selected {
+  border-color: var(--vscode-focusBorder, #007acc);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder, #007acc);
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background: var(--vscode-button-background, #0e639c);
+  border: 2px solid var(--vscode-sideBar-background, #252526);
+}
+
+.react-flow__edge-path {
+  stroke: var(--vscode-descriptionForeground, #cccccc);
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--vscode-focusBorder, #007acc);
+}
+
+.react-flow__controls button {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #ffffff);
+  border-bottom: 1px solid var(--vscode-panel-border, #444444);
+  fill: currentColor;
+}
+
+.react-flow__controls button:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+.react-flow__background {
+  background-color: var(--vscode-editor-background, #1e1e1e);
+}
