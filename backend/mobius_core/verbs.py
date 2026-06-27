@@ -162,7 +162,7 @@ class Setup:
         if platform.system() != "Linux":
             return RunResult(
                 status="failed",
-                summary="Bootstrap only supports apt-get on Linux.",
+                summary="Setup only supports apt-get on Linux.",
                 errors=[f"Unsupported OS: {platform.system()}"],
             )
         pkg_str = " ".join(shlex.quote(p) for p in self.packages)

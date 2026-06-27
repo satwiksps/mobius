@@ -12,9 +12,9 @@ from google.adk.tools.tool_context import ToolContext
 from google.genai import types
 
 from typing import Optional, Any, Dict, List
-from .._ui_client import ZikloUIClient
+from .._ui_client import MobiusUIClient
 
-ZikloUIClient_client = ZikloUIClient()
+MobiusUIClient_client = MobiusUIClient()
 
 try:
     import pyautogui
@@ -35,13 +35,13 @@ def _require_pyautogui() -> None:
 #
 # Speed: tiny TTL cache for discovery calls
 # -----------------------------------------
-# ZikloUIClient discovery calls are synchronous HTTP round-trips. We keep a short-lived cache
+# MobiusUIClient discovery calls are synchronous HTTP round-trips. We keep a short-lived cache
 # to avoid repeating identical calls back-to-back within the same UI state.
 
 
 _DISCOVERY_CACHE_TTL_SEC = 0.75
 
-# Maps ZikloUIClient_id → {pid, query, element_type} so interact_with_element can
+# Maps MobiusUIClient_id → {pid, query, element_type} so interact_with_element can
 # re-find an element automatically when its ID goes stale between calls.
 _element_meta: dict[str, dict] = {}
 
@@ -99,7 +99,7 @@ def _cached_list_windows() -> list[dict]:
     hit = _cache_get(key)
     if hit is not None:
         return hit
-    return _cache_set(key, ZikloUIClient_client.list_windows())
+    return _cache_set(key, MobiusUIClient_client.list_windows())
 
 
 def _cached_find_elements(
@@ -121,7 +121,7 @@ def _cached_find_elements(
         return hit
     return _cache_set(
         key,
-        ZikloUIClient_client.find_elements(
+        MobiusUIClient_client.find_elements(
             int(pid),
             query=_norm_query(query),
             element_type=element_type,
@@ -149,7 +149,7 @@ def _cached_find_elements_hwnd(
         return hit
     return _cache_set(
         key,
-        ZikloUIClient_client.find_elements_hwnd(
+        MobiusUIClient_client.find_elements_hwnd(
             int(hwnd),
             query=_norm_query(query),
             element_type=element_type,
@@ -203,7 +203,7 @@ def _screen_region(el_rect: dict, win_rect: Optional[dict] = None) -> str:
 
 def _slim_element(el: dict, win_rect: Optional[dict] = None) -> dict:
     """Strip an element dict to the fields the LLM needs."""
-    slim = {"ZikloUIClient_id": el.get("ZikloUIClient_id")}
+    slim = {"MobiusUIClient_id": el.get("MobiusUIClient_id")}
     if el.get("element_type"):
         slim["element_type"] = el["element_type"]
     for key in ("name", "title", "label"):
@@ -280,7 +280,7 @@ async def wait_for_element(
     Robustness (website-agnostic):
     - Tries exact query first, then query.lower() in the same poll if no match (handles case differences).
     - Default timeout is 5s to limit cost when the element never appears; pass timeout=10 for slow loads.
-    Each poll is one or two find_ui_elements calls (ZikloUIClient round-trip, often ~1s each).
+    Each poll is one or two find_ui_elements calls (MobiusUIClient round-trip, often ~1s each).
 
     Args:
         pid (int): The Process ID of the window to search inside.
@@ -404,10 +404,10 @@ def manage_window(
                 "message": f"Successfully launched {app_name}. You can now run list_active_windows to find its PID.",
             }
         elif action == "focus" and pid is not None:
-            ZikloUIClient_client.focus_window(pid)
+            MobiusUIClient_client.focus_window(pid)
             return {"status": "success", "message": f"Window {pid} focused."}
         elif action == "close" and pid is not None:
-            ZikloUIClient_client.close_window(pid)
+            MobiusUIClient_client.close_window(pid)
             return {"status": "success", "message": f"Window {pid} closed."}
         else:
             return {
@@ -426,7 +426,7 @@ def find_ui_elements(
 ) -> Dict[str, Any]:
     """
     Searches the accessibility tree of a specific window for UI elements.
-    Returns a list of matching elements. You MUST use the 'ZikloUIClient_id' from these results to interact with them.
+    Returns a list of matching elements. You MUST use the 'MobiusUIClient_id' from these results to interact with them.
 
     Args:
         pid (int):
@@ -450,7 +450,7 @@ def find_ui_elements(
             }
         win_rect = _win_rect_for_pid(pid)
         for el in elements:
-            eid = el.get("ZikloUIClient_id")
+            eid = el.get("MobiusUIClient_id")
             if eid:
                 _element_meta[eid] = {
                     "pid": pid,
@@ -492,15 +492,15 @@ def fill_form_fields(
     errors: Dict[str, str] = {}
     for label, value in zip(field_labels, field_values):
         try:
-            elements = ZikloUIClient_client.find_elements(
+            elements = MobiusUIClient_client.find_elements(
                 pid, query=str(label), interactive=True
             )
             if not elements:
                 errors[label] = "element not found"
                 continue
-            eid = elements[0]["ZikloUIClient_id"]
+            eid = elements[0]["MobiusUIClient_id"]
             _element_meta[eid] = {"pid": pid, "query": str(label), "element_type": None}
-            ZikloUIClient_client.set_text(eid, str(value))
+            MobiusUIClient_client.set_text(eid, str(value))
             filled[label] = value
         except Exception as e:
             errors[label] = str(e)
@@ -546,7 +546,7 @@ def find_ui_elements_hwnd(
 def _prune_accessibility_tree(node: dict) -> dict:
     """Recursively removes layout data and empty containers to save LLM context window tokens."""
     pruned_node = {
-        "id": node.get("ZikloUIClient_id"),
+        "id": node.get("MobiusUIClient_id"),
         "role": node.get("element_type"),
         "name": node.get("title") or node.get("name", ""),
     }
@@ -581,7 +581,7 @@ def get_window_tree(pid: int) -> Dict[str, Any]:
         pid (int): The Process ID of the window.
     """
     try:
-        raw_tree = ZikloUIClient_client.get_tree(pid)
+        raw_tree = MobiusUIClient_client.get_tree(pid)
         # Prune the tree before sending it back to the LLM
         lean_tree = _prune_accessibility_tree(raw_tree)
         return {"status": "success", "tree": lean_tree}
@@ -598,7 +598,7 @@ def get_window_tree_hwnd(hwnd: int) -> Dict[str, Any]:
         hwnd (int): The window handle.
     """
     try:
-        raw_tree = ZikloUIClient_client.get_tree_hwnd(hwnd)
+        raw_tree = MobiusUIClient_client.get_tree_hwnd(hwnd)
         lean_tree = _prune_accessibility_tree(raw_tree)
         return {"status": "success", "tree": lean_tree}
     except Exception as e:
@@ -620,7 +620,7 @@ def get_popuphost_menu_window(pid: int) -> Dict[str, Any]:
         pid (int): The explorer.exe pid (e.g. Program Manager pid) that owns the PopupHost windows.
     """
     try:
-        windows = ZikloUIClient_client.list_windows()
+        windows = MobiusUIClient_client.list_windows()
         candidates: list[dict[str, Any]] = []
         for w in windows:
             if not w.get("visible"):
@@ -665,10 +665,10 @@ async def interact_with_element(
     range_value: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
-    Performs a physical interaction with a specific UI element using its ZikloUIClient_id.
+    Performs a physical interaction with a specific UI element using its MobiusUIClient_id.
 
     Args:
-        element_id (str): The 'ZikloUIClient_id' of the target element.
+        element_id (str): The 'MobiusUIClient_id' of the target element.
         action (str): The interaction type. Must be one of: 'click', 'set_text', 'send_keys', 'focus',
                       'toggle', 'expand', 'collapse', 'select', 'set_range', 'scroll', 'scroll_into_view', 'highlight'.
         text_input (str, optional): Required ONLY for 'set_text' and 'send_keys'.
@@ -678,29 +678,29 @@ async def interact_with_element(
 
     def _do(eid: str) -> None:
         if action == "click":
-            ZikloUIClient_client.click(eid)
+            MobiusUIClient_client.click(eid)
         elif action == "set_text" and text_input is not None:
-            ZikloUIClient_client.set_text(eid, text_input)
+            MobiusUIClient_client.set_text(eid, text_input)
         elif action == "send_keys" and text_input is not None:
-            ZikloUIClient_client.send_keys(eid, text_input)
+            MobiusUIClient_client.send_keys(eid, text_input)
         elif action == "focus":
-            ZikloUIClient_client.focus(eid)
+            MobiusUIClient_client.focus(eid)
         elif action == "toggle":
-            ZikloUIClient_client.toggle(eid)
+            MobiusUIClient_client.toggle(eid)
         elif action == "expand":
-            ZikloUIClient_client.expand(eid)
+            MobiusUIClient_client.expand(eid)
         elif action == "collapse":
-            ZikloUIClient_client.collapse(eid)
+            MobiusUIClient_client.collapse(eid)
         elif action == "select":
-            ZikloUIClient_client.select(eid)
+            MobiusUIClient_client.select(eid)
         elif action == "set_range" and range_value is not None:
-            ZikloUIClient_client.set_range(eid, range_value)
+            MobiusUIClient_client.set_range(eid, range_value)
         elif action == "scroll" and scroll_direction is not None:
-            ZikloUIClient_client.scroll(eid, scroll_direction)
+            MobiusUIClient_client.scroll(eid, scroll_direction)
         elif action == "scroll_into_view":
-            ZikloUIClient_client.scroll_into_view(eid)
+            MobiusUIClient_client.scroll_into_view(eid)
         elif action == "highlight":
-            ZikloUIClient_client.highlight(eid)
+            MobiusUIClient_client.highlight(eid)
         else:
             raise ValueError(
                 f"Invalid action '{action}' or missing required parameters."
@@ -712,7 +712,7 @@ async def interact_with_element(
         if not meta or not meta.get("query"):
             return ""
         try:
-            fresh = ZikloUIClient_client.find_elements(
+            fresh = MobiusUIClient_client.find_elements(
                 meta["pid"],
                 query=meta["query"],
                 element_type=meta.get("element_type"),
@@ -763,14 +763,14 @@ async def interact_with_element(
     meta = _element_meta.get(element_id)
     if meta and meta.get("query"):
         try:
-            fresh = ZikloUIClient_client.find_elements(
+            fresh = MobiusUIClient_client.find_elements(
                 meta["pid"],
                 query=meta["query"],
                 element_type=meta.get("element_type"),
                 interactive=True,
             )
             if fresh:
-                fresh_id = fresh[0]["ZikloUIClient_id"]
+                fresh_id = fresh[0]["MobiusUIClient_id"]
                 _element_meta[fresh_id] = meta
                 _do(fresh_id)
                 _invalidate_discovery_cache()
@@ -803,25 +803,25 @@ async def act_on_element(
         element_type: Optional semantic role hint to narrow the search (e.g. 'Button', 'Edit').
     """
     def _find(query: str) -> list:
-        return ZikloUIClient_client.find_elements(
+        return MobiusUIClient_client.find_elements(
             pid, query=query, element_type=element_type, interactive=True
         )
 
     def _act(eid: str) -> None:
         if action == "click":
-            ZikloUIClient_client.click(eid)
+            MobiusUIClient_client.click(eid)
         elif action == "set_text" and text_input is not None:
-            ZikloUIClient_client.set_text(eid, text_input)
+            MobiusUIClient_client.set_text(eid, text_input)
         elif action == "send_keys" and text_input is not None:
-            ZikloUIClient_client.send_keys(eid, text_input)
+            MobiusUIClient_client.send_keys(eid, text_input)
         elif action == "toggle":
-            ZikloUIClient_client.toggle(eid)
+            MobiusUIClient_client.toggle(eid)
         elif action == "expand":
-            ZikloUIClient_client.expand(eid)
+            MobiusUIClient_client.expand(eid)
         elif action == "collapse":
-            ZikloUIClient_client.collapse(eid)
+            MobiusUIClient_client.collapse(eid)
         elif action == "select":
-            ZikloUIClient_client.select(eid)
+            MobiusUIClient_client.select(eid)
         else:
             raise ValueError(
                 f"Invalid action '{action}' or missing text_input for set_text/send_keys."
@@ -839,7 +839,7 @@ async def act_on_element(
             }
 
         el = elements[0]
-        eid = el["ZikloUIClient_id"]
+        eid = el["MobiusUIClient_id"]
         _element_meta[eid] = {"pid": pid, "query": description, "element_type": element_type}
 
         try:
@@ -848,7 +848,7 @@ async def act_on_element(
             # Stale element — re-find and retry once
             fresh = _find(description) or _find(description.lower())
             if fresh:
-                fresh_eid = fresh[0]["ZikloUIClient_id"]
+                fresh_eid = fresh[0]["MobiusUIClient_id"]
                 _element_meta[fresh_eid] = {"pid": pid, "query": description, "element_type": element_type}
                 _act(fresh_eid)
                 eid = fresh_eid
@@ -958,14 +958,14 @@ def click_first(
                     ],
                 }
 
-        element_id = candidates[0].get("ZikloUIClient_id")
+        element_id = candidates[0].get("MobiusUIClient_id")
         if not element_id:
             return {
                 "status": "error",
-                "message": "Matched element missing ZikloUIClient_id.",
+                "message": "Matched element missing MobiusUIClient_id.",
                 "element": candidates[0],
             }
-        ZikloUIClient_client.click(str(element_id))
+        MobiusUIClient_client.click(str(element_id))
         _invalidate_discovery_cache()
         return {
             "status": "success",
@@ -1004,11 +1004,11 @@ def type_into(
         filtered = [el for el in found if not _is_browser_chrome(el)]
         if filtered:
             found = filtered
-        element_id = found[0].get("ZikloUIClient_id")
+        element_id = found[0].get("MobiusUIClient_id")
         if not element_id:
             return {
                 "status": "error",
-                "message": "Matched field missing ZikloUIClient_id.",
+                "message": "Matched field missing MobiusUIClient_id.",
                 "element": found[0],
             }
 
@@ -1021,7 +1021,7 @@ def type_into(
             # can't insert mid-string newlines, so we need full keyboard simulation.
             # Click to focus, then Ctrl+A+Delete to clear any existing content first
             # (pyautogui.typewrite appends at cursor; not clearing causes concatenation).
-            ZikloUIClient_client.click(str(element_id))
+            MobiusUIClient_client.click(str(element_id))
             time.sleep(0.15)
             pyautogui.hotkey("ctrl", "a")
             pyautogui.press("delete")
@@ -1038,13 +1038,13 @@ def type_into(
             # Only trailing newline(s) — common case (URL + Enter, form submit).
             # Use fast AT-SPI set_text for the body, then press Enter for the newline(s).
             # This is as fast as before and avoids the typewrite slowdown.
-            ZikloUIClient_client.set_text(str(element_id), stripped)
+            MobiusUIClient_client.set_text(str(element_id), stripped)
             time.sleep(0.05)
             for _ in range(trailing_newlines):
                 pyautogui.press("enter")
             time.sleep(0.05)
         else:
-            ZikloUIClient_client.set_text(str(element_id), text_str)
+            MobiusUIClient_client.set_text(str(element_id), text_str)
         _invalidate_discovery_cache()
 
         if not verify:
@@ -1059,7 +1059,7 @@ def type_into(
             pid, element_type=element_type, interactive=interactive
         )
         for el in refreshed or []:
-            if str(el.get("ZikloUIClient_id")) != str(element_id):
+            if str(el.get("MobiusUIClient_id")) != str(element_id):
                 continue
             v = el.get("value") or el.get("text_content") or ""
             ok = str(text).strip() in str(v)
@@ -1091,17 +1091,17 @@ def _nav_url_norm(u: str) -> str:
 
 def navigate_to_url(pid: int, url: str) -> Dict[str, Any]:
     try:
-        ZikloUIClient_client.focus_window(pid)
-        elements = ZikloUIClient_client.find_elements(
+        MobiusUIClient_client.focus_window(pid)
+        elements = MobiusUIClient_client.find_elements(
             pid, query="Address and search bar", interactive=True
         )
         if not elements:
             return {"status": "error", "message": "Address bar not found."}
 
-        address_bar_id = elements[0]["ZikloUIClient_id"]
-        ZikloUIClient_client.click(address_bar_id)
-        ZikloUIClient_client.set_text(address_bar_id, url)
-        ZikloUIClient_client.send_keys(address_bar_id, "{ENTER}")
+        address_bar_id = elements[0]["MobiusUIClient_id"]
+        MobiusUIClient_client.click(address_bar_id)
+        MobiusUIClient_client.set_text(address_bar_id, url)
+        MobiusUIClient_client.send_keys(address_bar_id, "{ENTER}")
 
         # Wait for the address bar to reflect the target URL (navigation started),
         # then hold for a short render window. This collapses the common
@@ -1112,7 +1112,7 @@ def navigate_to_url(pid: int, url: str) -> Dict[str, Any]:
         while time.time() < deadline:
             time.sleep(0.25)
             try:
-                bars = ZikloUIClient_client.find_elements(
+                bars = MobiusUIClient_client.find_elements(
                     pid, query="Address and search bar", interactive=True
                 )
                 if bars:
@@ -1231,25 +1231,25 @@ def scroll_page(direction: str, amount: int = 3) -> Dict[str, Any]:
 
 def get_form_fields(pid: int) -> Dict[str, Any]:
     try:
-        text_fields = ZikloUIClient_client.find_elements(
+        text_fields = MobiusUIClient_client.find_elements(
             pid, interactive=True, element_type="Edit"
         )
-        dropdowns = ZikloUIClient_client.find_elements(
+        dropdowns = MobiusUIClient_client.find_elements(
             pid, interactive=True, element_type="ComboBox"
         )
-        checkboxes = ZikloUIClient_client.find_elements(
+        checkboxes = MobiusUIClient_client.find_elements(
             pid, interactive=True, element_type="CheckBox"
         )
-        buttons = ZikloUIClient_client.find_elements(
+        buttons = MobiusUIClient_client.find_elements(
             pid, interactive=True, element_type="Button"
         )
-        number_inputs = ZikloUIClient_client.find_elements(
+        number_inputs = MobiusUIClient_client.find_elements(
             pid, interactive=True, element_type="Spinner"
         )
-        labels = ZikloUIClient_client.find_elements(
+        labels = MobiusUIClient_client.find_elements(
             pid, interactive=False, element_type="Text"
         )
-        radio_buttons = ZikloUIClient_client.find_elements(
+        radio_buttons = MobiusUIClient_client.find_elements(
             pid, interactive=True, element_type="RadioButton"
         )
 
@@ -1296,12 +1296,12 @@ async def select_dropdown_option(
 
         # 1) Find candidate dropdowns in this PID
         candidates = (
-            ZikloUIClient_client.find_elements(pid, interactive=True, element_type="ComboBox")
+            MobiusUIClient_client.find_elements(pid, interactive=True, element_type="ComboBox")
             or []
         )
 
         # Try exact-ish query first (keeps behavior when labels match well)
-        direct = ZikloUIClient_client.find_elements(
+        direct = MobiusUIClient_client.find_elements(
             pid, query=dropdown_query, interactive=True, element_type="ComboBox"
         )
         if direct:
@@ -1328,32 +1328,32 @@ async def select_dropdown_option(
                 }
             dropdown = best
 
-        dropdown_id = dropdown["ZikloUIClient_id"]
+        dropdown_id = dropdown["MobiusUIClient_id"]
 
         # Helper: check if dropdown value reflects `option`
         def _value_is_set() -> bool:
             refreshed = (
-                ZikloUIClient_client.find_elements(
+                MobiusUIClient_client.find_elements(
                     pid, interactive=True, element_type="ComboBox"
                 )
                 or []
             )
             for c in refreshed:
-                if c.get("ZikloUIClient_id") == dropdown_id:
+                if c.get("MobiusUIClient_id") == dropdown_id:
                     val = c.get("value") or c.get("text_content") or ""
                     return _norm(option) in _norm(str(val))
             return False
 
         def _find_opts():
-            opts = ZikloUIClient_client.find_elements(
+            opts = MobiusUIClient_client.find_elements(
                 pid, query=option, interactive=True, element_type="ListItem"
             )
-            return opts or ZikloUIClient_client.find_elements(
+            return opts or MobiusUIClient_client.find_elements(
                 pid, query=option, interactive=True
             )
 
         for _attempt in range(3):
-            ZikloUIClient_client.click(dropdown_id)
+            MobiusUIClient_client.click(dropdown_id)
             await wait_for_element(
                 pid=pid,
                 query=option,
@@ -1365,20 +1365,20 @@ async def select_dropdown_option(
 
             opts = _find_opts()
             if opts:
-                ZikloUIClient_client.click(opts[0]["ZikloUIClient_id"])
+                MobiusUIClient_client.click(opts[0]["MobiusUIClient_id"])
                 if _value_is_set():
                     return {
                         "status": "success",
                         "message": f"Selected '{option}' from '{dropdown.get('label') or dropdown_query}'.",
                     }
 
-            opts = ZikloUIClient_client.find_elements(
+            opts = MobiusUIClient_client.find_elements(
                 pid, query=option, interactive=True, element_type="ListItem"
             )
             if not opts:
-                opts = ZikloUIClient_client.find_elements(pid, query=option, interactive=True)
+                opts = MobiusUIClient_client.find_elements(pid, query=option, interactive=True)
             if opts:
-                ZikloUIClient_client.click(opts[0]["ZikloUIClient_id"])
+                MobiusUIClient_client.click(opts[0]["MobiusUIClient_id"])
                 if _value_is_set():
                     return {
                         "status": "success",
@@ -1388,7 +1388,7 @@ async def select_dropdown_option(
         # 4) If we couldn't verify selection, return diagnostics
         available_options = []
         items = (
-            ZikloUIClient_client.find_elements(pid, interactive=True, element_type="ListItem")
+            MobiusUIClient_client.find_elements(pid, interactive=True, element_type="ListItem")
             or []
         )
         for i in items:
@@ -1415,7 +1415,7 @@ def select_option_by_label(pid: int, label_text: str) -> Dict[str, Any]:
     a true RadioButton, which is common on sites like LinkedIn.
     """
     try:
-        elements = ZikloUIClient_client.find_elements(
+        elements = MobiusUIClient_client.find_elements(
             pid,
             query=label_text,
             interactive=True,
@@ -1426,8 +1426,8 @@ def select_option_by_label(pid: int, label_text: str) -> Dict[str, Any]:
                 "message": f"No interactive element found with label '{label_text}'.",
             }
 
-        target_id = elements[0]["ZikloUIClient_id"]
-        ZikloUIClient_client.click(target_id)
+        target_id = elements[0]["MobiusUIClient_id"]
+        MobiusUIClient_client.click(target_id)
 
         return {
             "status": "success",
@@ -1462,7 +1462,7 @@ def get_page_text(pid: int) -> Dict[str, Any]:
         pid (int): The Process ID of the window.
     """
     try:
-        raw_tree = ZikloUIClient_client.get_tree(pid)
+        raw_tree = MobiusUIClient_client.get_tree(pid)
         all_texts = _collect_text(raw_tree)
         # Deduplicate adjacent repeated strings (common in a11y trees)
         deduped = []
@@ -1495,7 +1495,7 @@ async def wait_for_text(pid: int, text: str, timeout: int = 10) -> Dict[str, Any
         text_lower = text.lower()
         deadline = time.time() + timeout
         while time.time() < deadline:
-            raw_tree = ZikloUIClient_client.get_tree(pid)
+            raw_tree = MobiusUIClient_client.get_tree(pid)
             all_text = "\n".join(_collect_text(raw_tree)).lower()
             if text_lower in all_text:
                 return {

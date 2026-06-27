@@ -1,4 +1,4 @@
-"""Session owns the ZikloUIClient daemon and shared ADK session state."""
+"""Session owns the MobiusUIClient daemon and shared ADK session state."""
 
 import asyncio
 import logging
@@ -9,15 +9,15 @@ from typing import Optional
 from google.adk.sessions import InMemorySessionService
 from google.adk.artifacts import InMemoryArtifactService
 
-from .daemon import ZikloUIClientManager
+from .daemon import MobiusUIClientManager
 from ._ui.toast import run_toast_ui
 from ._tools.browser import BrowserManager, global_browser
 
-log = logging.getLogger("ziklo.session")
+log = logging.getLogger("mobius_core.session")
 
 
 class Session:
-    """Async context manager that owns a single ZikloUIClient daemon and ADK session.
+    """Async context manager that owns a single MobiusUIClient daemon and ADK session.
 
     When multiple verbs share a session, they share the same ADK conversation
     so the planner retains context across calls.
@@ -30,7 +30,7 @@ class Session:
     """
 
     def __init__(self):
-        self._daemon = ZikloUIClientManager()
+        self._daemon = MobiusUIClientManager()
         self._browser = global_browser
         self._started = False
         self._session_service = InMemorySessionService()
@@ -74,7 +74,7 @@ class Session:
                         "completion",
                         {
                             "description": (
-                                "ziklo has finished all tasks. "
+                                "mobius_core has finished all tasks. "
                                 "You can use your screen now."
                             )
                         },
@@ -108,5 +108,5 @@ class Session:
 
 
 def session() -> Session:
-    """Factory for ``async with ziklo.session() as s:``"""
+    """Factory for ``async with mobius_core.session() as s:``"""
     return Session()

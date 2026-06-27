@@ -17,7 +17,7 @@ def _extract_step_goal(request: str) -> str:
     return "..."
 
 
-class zikloConsole:
+class mobiusConsole:
     def __init__(self, verbose: bool = False):
         self.console = Console()
         self._step = 0

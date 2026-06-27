@@ -1,5 +1,5 @@
 """
-Ziklo Python Worker — communicates with the VS Code extension host
+Mobius Python Worker — communicates with the VS Code extension host
 via JSON-RPC over stdin/stdout.
 """
 import sys
@@ -16,7 +16,7 @@ import importlib.util
 import codegen
 import state
 
-DB_PATH = Path(os.environ.get("ZIKLO_DB_PATH", "ziklo.db"))
+DB_PATH = Path(os.environ.get("MOBIUS_DB_PATH", "mobius.db"))
 active_run_task = None
 active_run_id = None
 input_queue = asyncio.Queue()

@@ -1,5 +1,5 @@
 from .agents import build_agents
-from .daemon import ZikloUIClientManager
+from .daemon import MobiusUIClientManager
 from .runner import Agent, RunResult
 from .session import Session, session
 from .action import BaseActionAgent
@@ -25,5 +25,5 @@ __all__ = [
     "PythonExecutor",
     # Internal (rarely needed directly)
     "build_agents",
-    "ZikloUIClientManager",
+    "MobiusUIClientManager",
 ]

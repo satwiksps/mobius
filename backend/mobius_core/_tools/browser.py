@@ -13,7 +13,7 @@ try:
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
 
-log = logging.getLogger("ziklo.browser")
+log = logging.getLogger("mobius_core.browser")
 
 _PERSISTENT_PROFILE = "/root/.config/google-chrome"
 _TMP_PROFILE_GLOB = "/tmp/chrome-profile-*"

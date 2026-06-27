@@ -1,19 +1,19 @@
 """PythonExecutor — run arbitrary Python code in an isolated subprocess.
 
-Intended to be passed as an extra tool to ziklo agents (via ``extra_tools``),
+Intended to be passed as an extra tool to mobius_core agents (via ``extra_tools``),
 giving the LLM the ability to execute Python code without needing a browser or
 accessibility session.
 
 Usage in generated workflows::
 
-    from ziklo import Do
-    from ziklo._tools.python_executor import run_python
+    from mobius_core import Do
+    from mobius_core._tools.python_executor import run_python
 
     result = await Do("analyse the CSV", ..., extra_tools=[run_python]).run()
 
 Or import the convenience alias::
 
-    from ziklo import PythonExecutor
+    from mobius_core import PythonExecutor
     # PythonExecutor is the run_python function, ready to pass as an extra_tool.
 """
 from __future__ import annotations

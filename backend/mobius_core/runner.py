@@ -21,11 +21,11 @@ from .agents import (
     DESKTOP_EXECUTOR_AGENT_NAME,
 )
 from ._tools.hitl import set_hitl_enabled as _set_hitl_enabled
-from .daemon import ZikloUIClientManager
-from ._ui.console import zikloConsole
+from .daemon import MobiusUIClientManager
+from ._ui.console import mobius_coreConsole
 from .journal import Journal
 
-log = logging.getLogger("ziklo")
+log = logging.getLogger("mobius_core")
 
 
 @dataclass
@@ -62,8 +62,8 @@ class _Tee:
 
 
 def _setup_logging(*, verbose: bool = False) -> None:
-    """Configure the 'ziklo' logger. Called once per Agent init."""
-    logger = logging.getLogger("ziklo")
+    """Configure the 'mobius_core' logger. Called once per Agent init."""
+    logger = logging.getLogger("mobius_core")
     if logger.handlers:
         return
     level = logging.DEBUG if verbose else logging.INFO
@@ -128,7 +128,7 @@ class _LatencyTracker:
 
 
 class Agent:
-    """ziklo agent. Pass llm (model name) and task, then await `agent.run`."""
+    """mobius_core agent. Pass llm (model name) and task, then await `agent.run`."""
 
     def __init__(
         self,
@@ -227,7 +227,7 @@ class Agent:
     async def _run(self) -> RunResult:
         _set_hitl_enabled(self._human_in_the_loop)
         prompt = self._compose_prompt(self.task, self.extra_info)
-        self._ui = zikloConsole(verbose=self.verbose)
+        self._ui = mobiusConsole(verbose=self.verbose)
         self._ui.task_start(prompt)
 
         # Run state.
@@ -304,7 +304,7 @@ class Agent:
             # ADK-native structured output path:
             # - ADK validates the model reply against output_schema
             # - ADK stores the validated JSON string into session.state[output_key]
-            output_key = f"ziklo_output_{int(time.time() * 1000)}"
+            output_key = f"mobius_output_{int(time.time() * 1000)}"
             self._output_schema_output_key = output_key
             build_kwargs["output_schema"] = self._output_schema
             build_kwargs["output_key"] = output_key
@@ -323,7 +323,7 @@ class Agent:
             name="desktop_app",
             root_agent=root_agent,
         )
-        # Reuse artifact service from ziklo Session so screenshots persist
+        # Reuse artifact service from mobius_core Session so screenshots persist
         # across verbs; fall back to a fresh one for standalone Agent usage.
         if self._session and hasattr(self._session, "artifact_service"):
             artifact_service = self._session.artifact_service

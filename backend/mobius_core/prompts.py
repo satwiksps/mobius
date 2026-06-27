@@ -94,7 +94,7 @@ Rules:
 
 MULTIPLE BROWSER SURFACES
   When a task involves two Chromium apps simultaneously:
-  • ziklo's own Chrome is always "main" (auto-launched by dom_navigate — no setup needed).
+  • mobius_core's own Chrome is always "main" (auto-launched by dom_navigate — no setup needed).
   • To open a second Chrome instance: dom_open_browser(name="secondary")
   • To attach to an Electron/external app (VS Code, Slack, etc.): dom_connect_cdp(port=9222, name="app")
   • To switch which browser dom_* tools target: dom_switch_browser(name)

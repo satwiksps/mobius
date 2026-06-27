@@ -1,9 +1,9 @@
 {
-  "name": "ziklo",
-  "displayName": "Ziklo",
+  "name": "mobius",
+  "displayName": "Mobius",
   "description": "AI-powered desktop automation agent — build, run, and manage computer-use workflows natively inside VS Code.",
   "version": "0.1.0",
-  "publisher": "ziklo",
+  "publisher": "mobius",
   "icon": "media/logo.svg",
   "engines": {
     "vscode": "^1.90.0"
@@ -17,26 +17,26 @@
   "contributes": {
     "commands": [
       {
-        "command": "ziklo.openDashboard",
-        "title": "Ziklo: Open Dashboard",
+        "command": "mobius.openDashboard",
+        "title": "Mobius: Open Dashboard",
         "icon": "$(play)"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "ziklo-sidebar",
-          "title": "Ziklo",
+          "id": "mobius-sidebar",
+          "title": "Mobius",
           "icon": "media/activity-bar.svg"
         }
       ]
     },
     "views": {
-      "ziklo-sidebar": [
+      "mobius-sidebar": [
         {
           "type": "webview",
-          "id": "ziklo.sidebarView",
-          "name": "Ziklo"
+          "id": "mobius.sidebarView",
+          "name": "Mobius"
         }
       ]
     }

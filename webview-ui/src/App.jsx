@@ -13,7 +13,7 @@ import '@xyflow/react/dist/style.css';
 import { api, onEvent } from './vscode';
 
 // --- Custom Node ---
-const ZikloNode = ({ data, isConnectable, id, selected }) => {
+const MobiusNode = ({ data, isConnectable, id, selected }) => {
   const isCheck = data.type === 'Condition';
 
   const style = {
@@ -27,7 +27,7 @@ const ZikloNode = ({ data, isConnectable, id, selected }) => {
   };
 
   if (data.status === 'running') {
-    style.animation = 'ziklo-pulse 1s ease-in-out infinite';
+    style.animation = 'mobius-pulse 1s ease-in-out infinite';
   } else if (data.status === 'success') {
     style.borderLeft = '3px solid var(--vscode-testing-iconPassed)';
   } else if (data.status === 'failed') {
@@ -59,7 +59,7 @@ const ZikloNode = ({ data, isConnectable, id, selected }) => {
   );
 };
 
-const nodeTypes = { custom: ZikloNode };
+const nodeTypes = { custom: MobiusNode };
 
 export default function App() {
   // State
@@ -256,7 +256,7 @@ export default function App() {
     <div style={layout}>
       {/* Toolbar */}
       <div style={toolbar}>
-        <span style={{ fontWeight: 'bold' }}>Ziklo</span>
+        <span style={{ fontWeight: 'bold' }}>Mobius</span>
         
         <select style={select} value={currentWfId} onChange={e => handleLoadWorkflow(e.target.value)}>
           <option value="">Select workflow...</option>

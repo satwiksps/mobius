@@ -12,11 +12,11 @@ import logging
 import time
 import send2trash
 
-from .ui import ZikloUIClient_client
+from .ui import MobiusUIClient_client
 from .clipboard import clipboard_set
 from .hotkey import press_hotkey
 
-logger = logging.getLogger("ziklo.tools.filesystem")
+logger = logging.getLogger("mobius_core.tools.filesystem")
 
 
 def get_system_info() -> Dict[str, Any]:
@@ -451,7 +451,7 @@ async def _wait_for_dialog_open(timeout: float = 10.0) -> int | None:
     """Wait for a file dialog window to appear and return its PID. Polls until condition (no fixed sleep)."""
     start = time.time()
     while time.time() - start < timeout:
-        for w in ZikloUIClient_client.list_windows():
+        for w in MobiusUIClient_client.list_windows():
             if _is_file_dialog_window(w):
                 return w["pid"]
         await asyncio.sleep(0)
@@ -463,7 +463,7 @@ async def _wait_for_dialog_close(timeout: float = 10.0) -> bool:
     start = time.time()
     while time.time() - start < timeout:
         any_dialog = False
-        for w in ZikloUIClient_client.list_windows():
+        for w in MobiusUIClient_client.list_windows():
             if _is_file_dialog_window(w):
                 any_dialog = True
                 break
@@ -502,21 +502,21 @@ def _find_file_name_field(dialog_pid: int) -> str | None:
         ("File name:", "ComboBox"),
         ("File name", "ComboBox"),
     ]:
-        inputs = ZikloUIClient_client.find_elements(
+        inputs = MobiusUIClient_client.find_elements(
             dialog_pid, query=query, element_type=etype, interactive=True
         )
         for el in reversed(inputs):
             if not _is_likely_address_bar(el):
-                return el["ZikloUIClient_id"]
+                return el["MobiusUIClient_id"]
 
     # Fallback: any Edit or ComboBox with "file name" in name (and not address bar)
     for etype in ("Edit", "ComboBox"):
-        for el in ZikloUIClient_client.find_elements(
+        for el in MobiusUIClient_client.find_elements(
             dialog_pid, element_type=etype, interactive=True
         ):
             name = (el.get("name") or el.get("title") or "").lower()
             if "file name" in name and not _is_likely_address_bar(el):
-                return el["ZikloUIClient_id"]
+                return el["MobiusUIClient_id"]
 
     return None
 
@@ -526,7 +526,7 @@ def _find_open_button(dialog_pid: int) -> str | None:
     Find the main 'Open' button (the one that submits the file), not the dropdown arrow.
     Skip buttons with automation_id 'DropDown' or very small rect (dropdown arrows).
     """
-    buttons = ZikloUIClient_client.find_elements(
+    buttons = MobiusUIClient_client.find_elements(
         dialog_pid,
         query="Open",
         element_type="Button",
@@ -538,11 +538,11 @@ def _find_open_button(dialog_pid: int) -> str | None:
         w = rect.get("width") or 0
         if aid == "DropDown" or w < 30:
             continue
-        return b["ZikloUIClient_id"]
+        return b["MobiusUIClient_id"]
     if buttons:
-        return buttons[-1]["ZikloUIClient_id"]
+        return buttons[-1]["MobiusUIClient_id"]
 
-    buttons = ZikloUIClient_client.find_elements(
+    buttons = MobiusUIClient_client.find_elements(
         dialog_pid,
         element_type="Button",
         interactive=True,
@@ -554,9 +554,9 @@ def _find_open_button(dialog_pid: int) -> str | None:
         if (rect.get("width") or 0) >= 50 and "cancel" not in (
             b.get("name") or b.get("title") or ""
         ).lower():
-            return b["ZikloUIClient_id"]
+            return b["MobiusUIClient_id"]
     if buttons:
-        return buttons[0]["ZikloUIClient_id"]
+        return buttons[0]["MobiusUIClient_id"]
     return None
 
 
@@ -573,14 +573,14 @@ async def upload_file(element_id: str, path: str) -> Dict[str, Any]:
         filename = os.path.basename(path)
 
         # 1. Click the upload button on the web page / app
-        ZikloUIClient_client.click(element_id)
+        MobiusUIClient_client.click(element_id)
 
         # 2. Wait for the file dialog to appear (poll until condition)
         dialog_pid = await _wait_for_dialog_open(timeout=10.0)
         if not dialog_pid:
             return {"status": "error", "message": "File dialog not detected"}
 
-        ZikloUIClient_client.focus_window(dialog_pid)
+        MobiusUIClient_client.focus_window(dialog_pid)
 
         # 3. Locate the 'File name' input field (not the address bar)
         field_id = _find_file_name_field(dialog_pid)
@@ -590,7 +590,7 @@ async def upload_file(element_id: str, path: str) -> Dict[str, Any]:
         # 4. Put path in the "File name" box: clipboard + system-level paste so the dialog
         #    actually receives it (element send_keys for ^v can fail in native dialogs).
         clipboard_set(path)
-        ZikloUIClient_client.focus(field_id)
+        MobiusUIClient_client.focus(field_id)
         press_hotkey("ctrl+a")
         press_hotkey("ctrl+v")
 
@@ -600,7 +600,7 @@ async def upload_file(element_id: str, path: str) -> Dict[str, Any]:
         if not closed:
             open_button_id = _find_open_button(dialog_pid)
             if open_button_id:
-                ZikloUIClient_client.click(open_button_id)
+                MobiusUIClient_client.click(open_button_id)
             else:
                 press_hotkey("enter")
             closed = await _wait_for_dialog_close(timeout=8.0)

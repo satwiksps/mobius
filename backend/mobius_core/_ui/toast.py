@@ -17,7 +17,7 @@ def run_toast_ui(kind: str, context: dict[str, Any]) -> dict[str, Any]:
     root.overrideredirect(True)
     root.configure(bg="#ffffff")
 
-    # Cursive "ziklo" – try script fonts (Windows: Segoe Script, Lucida Handwriting)
+    # Cursive "mobius_core" – try script fonts (Windows: Segoe Script, Lucida Handwriting)
     try:
         font_cursive = tkfont.Font(root=root, family="Segoe Script", size=15)
     except Exception:
@@ -39,11 +39,11 @@ def run_toast_ui(kind: str, context: dict[str, Any]) -> dict[str, Any]:
     card = tk.Frame(root, bg="#ffffff", padx=9, pady=7)
     card.pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
 
-    # Header: "ziklo" in cursive
-    ziklo_lbl = tk.Label(
-        card, text="ziklo", fg="#000000", bg="#ffffff", font=font_cursive
+    # Header: "mobius_core" in cursive
+    mobius_core_lbl = tk.Label(
+        card, text="mobius", fg="#000000", bg="#ffffff", font=font_cursive
     )
-    ziklo_lbl.pack(anchor="w", pady=(0, 3))
+    mobius_core_lbl.pack(anchor="w", pady=(0, 3))
 
     if kind == "approval":
         subtitle = "Permission required"
@@ -94,7 +94,7 @@ def run_toast_ui(kind: str, context: dict[str, Any]) -> dict[str, Any]:
     elif kind == "completion":
         desc = context.get(
             "description",
-            "ziklo has finished all tasks. You can use your screen now.",
+            "mobius_core has finished all tasks. You can use your screen now.",
         )
         body.insert(tk.END, desc, "body")
     else:

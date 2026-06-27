@@ -1,5 +1,5 @@
 """
-perception.py — Stateful page perception layer for ziklo's DOM tools.
+perception.py — Stateful page perception layer for mobius_core's DOM tools.
 
 This module is the brain behind smart_dom_tools. Instead of every action
 returning {"status": "success"}, actions now:
@@ -28,7 +28,7 @@ import logging
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List, Optional
 
-log = logging.getLogger("ziklo.perception")
+log = logging.getLogger("mobius_core.perception")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

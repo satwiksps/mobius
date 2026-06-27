@@ -1,4 +1,4 @@
-"""BaseActionAgent — the extensibility primitive for ziklo verbs and domain agents."""
+"""BaseActionAgent — the extensibility primitive for mobius_core verbs and domain agents."""
 
 import logging
 from abc import ABC, abstractmethod
@@ -6,11 +6,11 @@ from typing import Any, Optional, Type
 
 from .runner import Agent, RunResult
 
-log = logging.getLogger("ziklo.action")
+log = logging.getLogger("mobius_core.action")
 
 
 class BaseActionAgent(ABC):
-    """Abstract base for all ziklo verbs and user-defined domain agents.
+    """Abstract base for all mobius_core verbs and user-defined domain agents.
 
     Composes :class:`Agent` internally — does **not** inherit from it.
     Subclasses must override :meth:`task_prompt`. Optionally override

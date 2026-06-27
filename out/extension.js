@@ -17,7 +17,7 @@ class PythonWorker {
     outputChannel;
     constructor(context) {
         this.context = context;
-        this.outputChannel = vscode.window.createOutputChannel('Ziklo');
+        this.outputChannel = vscode.window.createOutputChannel('Mobius');
     }
     async ensureStarted() {
         if (this.process) {
@@ -30,7 +30,7 @@ class PythonWorker {
         const pipExe = isWin ? path.join(venvPath, 'Scripts', 'pip.exe') : path.join(venvPath, 'bin', 'pip');
         // First-run setup with progress
         if (!fs.existsSync(pyExe)) {
-            await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Ziklo', cancellable: false }, async (progress) => {
+            await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Mobius', cancellable: false }, async (progress) => {
                 progress.report({ message: 'Creating Python environment...' });
                 this.outputChannel.appendLine('Creating .venv...');
                 const venvCode = await this.runProcess('python', ['-m', 'venv', '.venv'], backendPath);
@@ -41,7 +41,7 @@ class PythonWorker {
                 this.outputChannel.appendLine('Installing dependencies...');
                 const pipCode = await this.runProcess(pipExe, ['install', '-r', 'requirements.txt', '--quiet'], backendPath);
                 if (pipCode !== 0) {
-                    throw new Error('Failed to install Python dependencies. Check the Ziklo output channel for details.');
+                    throw new Error('Failed to install Python dependencies. Check the Mobius output channel for details.');
                 }
                 this.outputChannel.appendLine('Dependencies installed successfully.');
             });
@@ -51,11 +51,11 @@ class PythonWorker {
         if (!fs.existsSync(storagePath)) {
             fs.mkdirSync(storagePath, { recursive: true });
         }
-        const dbPath = path.join(storagePath, 'ziklo.db');
-        this.outputChannel.appendLine('Starting Ziklo worker...');
+        const dbPath = path.join(storagePath, 'mobius.db');
+        this.outputChannel.appendLine('Starting Mobius worker...');
         this.process = (0, child_process_1.spawn)(pyExe, ['worker.py'], {
             cwd: backendPath,
-            env: { ...process.env, ZIKLO_DB_PATH: dbPath, PYTHONUNBUFFERED: '1' }
+            env: { ...process.env, MOBIUS_DB_PATH: dbPath, PYTHONUNBUFFERED: '1' }
         });
         this.process.stdout?.on('data', (data) => {
             this.buffer += data.toString();
@@ -173,7 +173,7 @@ function getWebviewContent(webview, extensionPath, nonce) {
                    font-src ${webview.cspSource};
                    connect-src 'none';">
     ${cssTag}
-    <title>Ziklo</title>
+    <title>Mobius</title>
 </head>
 <body>
     <div id="root"></div>
@@ -182,7 +182,7 @@ function getWebviewContent(webview, extensionPath, nonce) {
 </html>`;
 }
 // ── Sidebar View Provider ───────────────────────────────────────────────────
-class ZikloSidebarProvider {
+class MobiusSidebarProvider {
     extensionPath;
     worker;
     view;
@@ -201,7 +201,7 @@ class ZikloSidebarProvider {
         webviewView.webview.html = this.getSidebarHtml(webviewView.webview, nonce);
         webviewView.webview.onDidReceiveMessage(async (msg) => {
             if (msg.command === 'openDashboard') {
-                vscode.commands.executeCommand('ziklo.openDashboard');
+                vscode.commands.executeCommand('mobius.openDashboard');
             }
         });
     }
@@ -312,7 +312,7 @@ class ZikloSidebarProvider {
                 <line x1="8.5" y1="7" x2="10.8" y2="7" stroke="white" stroke-width="1" stroke-linecap="round"/>
             </svg>
         </div>
-        Ziklo
+        Mobius
     </div>
     <p class="description">
         Build and run AI-powered desktop automation workflows directly inside VS Code.
@@ -349,18 +349,18 @@ let activePanel;
 function activate(context) {
     worker = new PythonWorker(context);
     // Register sidebar
-    const sidebarProvider = new ZikloSidebarProvider(context.extensionPath, worker);
-    context.subscriptions.push(vscode.window.registerWebviewViewProvider('ziklo.sidebarView', sidebarProvider));
+    const sidebarProvider = new MobiusSidebarProvider(context.extensionPath, worker);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider('mobius.sidebarView', sidebarProvider));
     // Register dashboard command
-    context.subscriptions.push(vscode.commands.registerCommand('ziklo.openDashboard', async () => {
+    context.subscriptions.push(vscode.commands.registerCommand('mobius.openDashboard', async () => {
         try {
             await worker.ensureStarted();
         }
         catch (e) {
-            vscode.window.showErrorMessage(`Ziklo: ${e.message}`);
+            vscode.window.showErrorMessage(`Mobius: ${e.message}`);
             return;
         }
-        const panel = vscode.window.createWebviewPanel('zikloDashboard', 'Ziklo Workflow Editor', vscode.ViewColumn.One, {
+        const panel = vscode.window.createWebviewPanel('mobiusDashboard', 'Mobius Workflow Editor', vscode.ViewColumn.One, {
             enableScripts: true,
             retainContextWhenHidden: true,
             localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'webview-ui', 'build'))]

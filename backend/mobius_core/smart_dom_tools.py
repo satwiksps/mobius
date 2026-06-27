@@ -25,10 +25,10 @@ import functools
 import logging
 from typing import Any, Dict, List, Optional
 
-from ziklo._tools.browser import global_browser
-from ziklo._tools import perception
+from mobius_core._tools.browser import global_browser
+from mobius_core._tools import perception
 
-log = logging.getLogger("ziklo.smart_dom_tools")
+log = logging.getLogger("mobius_core.smart_dom_tools")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1155,7 +1155,7 @@ async def dom_smart_upload(
             + 'width:100px;height:100px;z-index:999999;';
 
         // Always overwrite — existing IDs may contain special chars like '(' that break CSS selectors
-        el.id = '__ziklo_upload_' + Date.now() + '__';
+        el.id = '__mobius_upload_' + Date.now() + '__';
         return { id: el.id, desc: ShadowLib.describe(el) };
     }
     """
@@ -1515,7 +1515,7 @@ async def dom_act(steps: List[Dict[str, Any]]) -> Dict[str, Any]:
     returned so you can see exactly where the chain broke if it fails.
     """
     # Late-imported to avoid circulars at module-load
-    from ziklo._tools.playwright_tools import dom_navigate
+    from mobius_core._tools.playwright_tools import dom_navigate
 
     results: List[Dict[str, Any]] = []
     for i, step in enumerate(steps):

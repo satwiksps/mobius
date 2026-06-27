@@ -7,23 +7,23 @@ import atexit
 import os
 from pathlib import Path
 
-log = logging.getLogger("ziklo.daemon")
+log = logging.getLogger("mobius_core.daemon")
 
 
-class ZikloUIClientManager:
+class MobiusUIClientManager:
     def __init__(
         self,
         binary_path: str = None,
         verbose: bool = False,
     ):
-        """Manages the lifecycle of the ZikloUIClient background daemon."""
+        """Manages the lifecycle of the MobiusUIClient background daemon."""
         if binary_path is None:
-            # Default to bundled binary inside the ziklo package
+            # Default to bundled binary inside the mobius_core package
             here = Path(__file__).resolve().parent
             if os.name == "nt":
-                candidate = here / "_bin" / "ZikloUIClient.exe"
+                candidate = here / "_bin" / "MobiusUIClient.exe"
             else:
-                candidate = here / "_bin" / "ZikloUIClient"
+                candidate = here / "_bin" / "MobiusUIClient"
             binary_path = str(candidate)
 
         self.binary_path = Path(binary_path).resolve()
@@ -33,9 +33,9 @@ class ZikloUIClientManager:
         atexit.register(self.stop)
 
     async def start(self):
-        """Starts the ZikloUIClient HTTP server in the background. Await this from an async context."""
+        """Starts the MobiusUIClient HTTP server in the background. Await this from an async context."""
         if not self.binary_path.exists():
-            raise FileNotFoundError(f"ZikloUIClient binary not found at: {self.binary_path}")
+            raise FileNotFoundError(f"MobiusUIClient binary not found at: {self.binary_path}")
 
         # On Linux, ensure toolkit-accessibility is enabled so that apps like
         # Chrome expose their full AT-SPI tree.  Without this, Chrome only
@@ -61,7 +61,7 @@ class ZikloUIClientManager:
             except Exception as e:
                 log.debug("Could not set toolkit-accessibility: %s", e)
 
-        log.info("Starting ZikloUIClient daemon...")
+        log.info("Starting MobiusUIClient daemon...")
 
         self.process = subprocess.Popen(
             [str(self.binary_path)],
@@ -80,18 +80,18 @@ class ZikloUIClientManager:
             try:
                 response = requests.get(f"{self.base_url}/health", timeout=1)
                 if response.status_code == 200:
-                    log.info("ZikloUIClient daemon ready on port 7878")
+                    log.info("MobiusUIClient daemon ready on port 7878")
                     return
             except requests.exceptions.ConnectionError:
                 await asyncio.sleep(0)
 
         self.stop()
-        raise TimeoutError("ZikloUIClient server failed to start within the timeout period.")
+        raise TimeoutError("MobiusUIClient server failed to start within the timeout period.")
 
     def stop(self):
         """Terminates the background process."""
         if self.process and self.process.poll() is None:
-            log.info("Stopping ZikloUIClient daemon...")
+            log.info("Stopping MobiusUIClient daemon...")
             self.process.terminate()
             self.process.wait(timeout=3)
             log.info("Daemon stopped")

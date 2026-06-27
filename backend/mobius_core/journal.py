@@ -43,7 +43,7 @@ class Journal:
     def __init__(self, core_key: str = "desktop_attempt_0"):
         self.entry = JournalEntry(core_key=core_key)
         self._pending_calls: dict[str, dict[str, Any]] = {}
-        self._element_index: dict[str, str] = {}  # ZikloUIClient_id -> label
+        self._element_index: dict[str, str] = {}  # MobiusUIClient_id -> label
 
     def reset(self, *, core_key: str, phase_instruction: str = "") -> None:
         self.entry = JournalEntry(
@@ -163,7 +163,7 @@ class Journal:
     def _maybe_record_interaction_from_call(
         self, tool_name: str, args: dict[str, Any]
     ) -> None:
-        # The “elements interacted with” are primarily ZikloUIClient UI interactions.
+        # The “elements interacted with” are primarily MobiusUIClient UI interactions.
         if tool_name == "interact_with_element":
             element_id = args.get("element_id")
             action = args.get("action")
@@ -196,7 +196,7 @@ class Journal:
         for el in elements:
             if not isinstance(el, dict):
                 continue
-            element_id = el.get("ZikloUIClient_id")
+            element_id = el.get("MobiusUIClient_id")
             if not element_id:
                 continue
             label = (

@@ -1,6 +1,6 @@
 """Graph JSON -> workflow.py code generator.
 
-Reads /workspace/workflow.json, emits /workspace/workflow.py that uses ziklo
+Reads /workspace/workflow.json, emits /workspace/workflow.py that uses mobius_core
 verbs (Do, Navigate, Check, Fill, Read) with the same patterns as hand-written
 workflow scripts.
 """
@@ -544,7 +544,7 @@ def _emit_node(
         lines.append(f'{pad}report_node("{node.id}", "success")')
         return lines
 
-    if node.type not in ("Condition", "Bootstrap"):
+    if node.type not in ("Condition", "Setup"):
         lines.append(f'{pad}report_node("{node.id}", "running")')
         lines.append(f'{pad}print("--- {node.id}: {node.label} ---")')
         lines.append(f'{pad}_current_log_node[0] = {node.id!r}')
@@ -689,7 +689,7 @@ def _emit_node(
             lines.append(
                 f'{vpad}if {node.id}_out is None: raise RuntimeError("Extract node {node.id} ({node.label}) returned None output — schema validation failed")'
             )
-            # If ziklo returned the output as a raw JSON string instead of a Pydantic object, deserialize it
+            # If mobius_core returned the output as a raw JSON string instead of a Pydantic object, deserialize it
             lines.append(f"{vpad}if isinstance({node.id}_out, str):")
             lines.append(f"{vpad}    import json as _json_{node.id}")
             lines.append(f"{vpad}    {node.id}_out = {cls_name}(**_json_{node.id}.loads({node.id}_out))")
@@ -763,7 +763,7 @@ def _emit_node(
         # Check is handled at the control-flow level, not here
         pass
 
-    if node.type not in ("Condition", "Code", "Bootstrap"):
+    if node.type not in ("Condition", "Code", "Setup"):
         if node.output_schema:
             lines.append(
                 f'{vpad}report_node_output("{node.id}", _{node.id}_result.output.__dict__ if hasattr(_{node.id}_result.output, "__dict__") else _{node.id}_result.output)'
@@ -1313,22 +1313,22 @@ def generate(graph_data: dict, log_file_path: str | None = None, inputs: dict | 
             "from google.adk.tools.mcp_tool.mcp_toolset import SseServerParams as _SseServerParams"
         )
 
-    # ForEach/Bootstrap generate plain Python — no ziklo verb class to import
-    verb_types = {n.type for n in nodes if n.type not in ("Code", "Agent", "ForEach", "Bootstrap")}
+    # ForEach/Setup generate plain Python — no mobius_core verb class to import
+    verb_types = {n.type for n in nodes if n.type not in ("Code", "Agent", "ForEach", "Setup")}
     verb_imports = sorted(verb_types)
     has_agent_nodes = any(n.type == "Agent" for n in nodes)
-    has_bootstrap_nodes = any(n.type == "Bootstrap" for n in nodes)
+    has_setup_nodes = any(n.type == "Setup" for n in nodes)
     if has_agent_nodes:
-        # BaseActionAgent must also come from ziklo
-        ziklo_imports = sorted(verb_types | {"BaseActionAgent"})
+        # BaseActionAgent must also come from mobius_core
+        mobius_core_imports = sorted(verb_types | {"BaseActionAgent"})
     else:
-        ziklo_imports = verb_imports
-    if ziklo_imports:
-        lines.append(f"from ziklo import {', '.join(ziklo_imports)}, session")
+        mobius_core_imports = verb_imports
+    if mobius_core_imports:
+        lines.append(f"from mobius_core import {', '.join(mobius_core_imports)}, session")
     else:
-        lines.append("from ziklo import session")
-    if has_bootstrap_nodes:
-        lines.append("from ziklo import Bootstrap")
+        lines.append("from mobius_core import session")
+    if has_setup_nodes:
+        lines.append("from mobius_core import Setup")
     lines.append("from state import pause_event, report_node, report_node_output, report_node_log")
     lines.append(f"_inputs = {repr(inputs or {})}")
     lines.append("")
@@ -1413,7 +1413,7 @@ def generate(graph_data: dict, log_file_path: str | None = None, inputs: dict | 
     lines.append("    _sys.stderr = _NodeLogTee(_sys.stderr)")
     # Re-attach logging handlers so they pick up the new stderr wrapper.
     lines.append("    import logging as _logging")
-    lines.append("    for _lname in ('ziklo', 'root'):")
+    lines.append("    for _lname in ('mobius_core', 'root'):")
     lines.append("        _lg = _logging.getLogger(_lname) if _lname != 'root' else _logging.getLogger()")
     lines.append("        for _h in list(_lg.handlers):")
     lines.append("            if isinstance(_h, _logging.StreamHandler) and not isinstance(_h, _logging.FileHandler):")

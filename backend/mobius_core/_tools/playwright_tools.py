@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from .browser import global_browser
 
-log = logging.getLogger("ziklo.playwright_tools")
+log = logging.getLogger("mobius_core.playwright_tools")
 
 async def dom_navigate(url: str) -> Dict[str, Any]:
     """Navigate to a specific URL using the inside-DOM Playwright engine. 

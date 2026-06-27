@@ -1,10 +1,10 @@
-"""Ziklo UI Automation Python client."""
+"""Mobius UI Automation Python client."""
 
 from __future__ import annotations
 import uiautomation as auto
 from typing import Any, Optional
 
-class ZikloUIClient:
+class MobiusUIClient:
     """Wrapper around uiautomation for Windows."""
 
     def __init__(self):

@@ -12,7 +12,7 @@ from google.adk.models.lite_llm import LiteLlm
 from typing import Any, Optional
 import logging
 
-log = logging.getLogger("ziklo.agents")
+log = logging.getLogger("mobius_core.agents")
 
 from .prompts import SYSTEM_PROMPT, PARENT_SYSTEM_PROMPT
 from ._tools.ui import (
@@ -172,15 +172,15 @@ def make_inject_screenshot_callback(
         # direct Session.state mutations outside callback/tool context.
         if budget_counter is None:
             call_num = (
-                int(callback_context.state.get("temp:ziklo_call_count", 0) or 0) + 1
+                int(callback_context.state.get("temp:mobius_call_count", 0) or 0) + 1
             )
-            callback_context.state["temp:ziklo_call_count"] = call_num
+            callback_context.state["temp:mobius_call_count"] = call_num
         else:
             budget_counter["call_count"] = (
                 int(budget_counter.get("call_count", 0) or 0) + 1
             )
             call_num = budget_counter["call_count"]
-            callback_context.state["temp:ziklo_call_count"] = call_num
+            callback_context.state["temp:mobius_call_count"] = call_num
 
         remaining = max(0, int(max_calls) - call_num)
 
