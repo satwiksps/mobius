@@ -4,7 +4,7 @@
   "description": "AI-powered desktop automation agent — build, run, and manage computer-use workflows natively inside VS Code.",
   "version": "0.1.0",
   "publisher": "mobius",
-  "icon": "media/logo.svg",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.90.0"
   },

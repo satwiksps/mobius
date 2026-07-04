@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="media/logo.svg" alt="Mobius Logo" width="120" />
+  <img src="media/icon.png" alt="Mobius Logo" width="120" />
   <h1>Mobius</h1>
   <p><b>The Open Source AI Desktop Automation Agent for VS Code</b></p>
 

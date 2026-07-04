@@ -411,7 +411,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             const nonce = crypto.randomBytes(16).toString('hex');
             panel.webview.html = getWebviewContent(panel.webview, context.extensionPath, nonce);
-            panel.iconPath = vscode.Uri.file(path.join(context.extensionPath, 'media', 'logo.svg'));
+            panel.iconPath = vscode.Uri.file(path.join(context.extensionPath, 'media', 'icon.png'));
 
             // Bridge: Webview → Python Worker
 
