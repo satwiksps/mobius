@@ -1,14 +1,6 @@
 <div align="center">
-  <img src="media/icon.png" alt="Mobius Logo" width="120" />
-  <h1>Mobius</h1>
-  <p><b>The Open Source AI Desktop Automation Agent for VS Code</b></p>
-
-  [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-  [![Platform](https://img.shields.io/badge/platform-VS%20Code-blue.svg)]()
-  [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
+  <img src="media/mobius_cover_photo.png" alt="Mobius Cover Photo" width="100%" />
 </div>
-
----
 
 ## Overview
 
